@@ -1,5 +1,5 @@
 ```bash
-sudo pacman -Syu make
+sudo pacman -Syu git wget make
 
 git --recurse-submodules clone https://github.com/Prslc/kpm_demo.git
 
