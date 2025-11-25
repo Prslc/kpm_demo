@@ -95,13 +95,13 @@ static long kpm_uname_init(const char *args, const char *event, void *reserved)
           event, args ? args : "(null)");
 
     if (!uts) {
-        logke("[kpm_release_spoof] init_uts_ns not found\n");
+        pr_err("[kpm_release_spoof] init_uts_ns not found\n");
         return -ENOENT;
     }
 
     g_release_ptr = find_uname_release_field(uts, SCAN_SIZE);
     if (!g_release_ptr) {
-        logke("[kpm_release_spoof] could not locate release string\n");
+        pr_err("[kpm_release_spoof] could not locate release string\n");
         return -EINVAL;
     }
 
