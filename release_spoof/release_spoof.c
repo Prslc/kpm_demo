@@ -2,24 +2,24 @@
 #include <ktypes.h>
 #include <kpmodule.h>
 #include <ksyms.h>
-#include <log.h>
 #include <linux/printk.h>
 #include <linux/string.h>
 #include <linux/errno.h>
+#include <kputils.h>
 
 #define UTS_RELEASE_LEN 65
 #define SCAN_SIZE       0x400  // number of bytes scanned
 
-KPM_NAME("kpm_release_spoof");
-KPM_VERSION("1.0.1");
+KPM_NAME("kpm-release-spoof");
+KPM_VERSION("1.0.2");
 KPM_LICENSE("GPL v2");
 KPM_AUTHOR("Prslc");
-KPM_DESCRIPTION("KPM: dynamically locate and spoof uname.release");
+KPM_DESCRIPTION("Spoof kernel release string dynamically");
 
 static char g_old_release[UTS_RELEASE_LEN] = "";
 static char *g_release_ptr = NULL;
 
-/* local helpers */
+// local helpers
 static inline bool k_isdigit(char c) {
     return (c >= '0' && c <= '9');
 }
@@ -28,7 +28,7 @@ static inline bool is_visible_char(char c) {
     return (c >= 0x20 && c <= 0x7E);
 }
 
-/* check if a string looks like uname.release */
+// check if a string looks like uname.release
 static bool validate_release_candidate(const char *s)
 {
     bool has_dot = false;
@@ -87,7 +87,7 @@ static char *find_uname_release_field(void *base, size_t sz)
     return NULL;
 }
 
-static long kpm_uname_init(const char *args, const char *event, void *reserved)
+static long release_spoof_init(const char *args, const char *event, void *reserved)
 {
     void *uts = (void *)kallsyms_lookup_name("init_uts_ns");
 
@@ -114,26 +114,29 @@ static long kpm_uname_init(const char *args, const char *event, void *reserved)
     return 0;
 }
 
-static long kpm_release_control0(const char *args, char *__user out_msg, int outlen)
-{
-    if (!g_release_ptr)
+static long release_spoof_control0(const char *args, char *__user out_msg, int outlen)
+{   
+    if (!g_release_ptr) {
+        compat_copy_to_user(out_msg, "spoof failed!", 64);
         return -EINVAL;
+    }
 
     if (!args || args[0] == '\0') {
         strncpy(g_release_ptr, g_old_release, UTS_RELEASE_LEN - 1);
         g_release_ptr[UTS_RELEASE_LEN - 1] = '\0';
         pr_info("[kpm_release_spoof] release restored to '%s'\n", g_release_ptr);
+        compat_copy_to_user(out_msg, "spoof restored!", 64);
         return 0;
     }
 
     strncpy(g_release_ptr, args, UTS_RELEASE_LEN - 1);
     g_release_ptr[UTS_RELEASE_LEN - 1] = '\0';
     pr_info("[kpm_release_spoof] release changed to '%s'\n", g_release_ptr);
-
+    compat_copy_to_user(out_msg, "spoof ok!", 64);
     return 0;
 }
 
-static long kpm_uname_exit(void *reserved)
+static long release_spoof_exit(void *reserved)
 {
     if (g_release_ptr && g_old_release[0]) {
         strncpy(g_release_ptr, g_old_release, UTS_RELEASE_LEN - 1);
@@ -145,6 +148,6 @@ static long kpm_uname_exit(void *reserved)
     return 0;
 }
 
-KPM_INIT(kpm_uname_init);
-KPM_CTL0(kpm_release_control0);
-KPM_EXIT(kpm_uname_exit);
+KPM_INIT(release_spoof_init);
+KPM_CTL0(release_spoof_control0);
+KPM_EXIT(release_spoof_exit);

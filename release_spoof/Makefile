@@ -16,9 +16,9 @@ INCLUDE_FLAGS := $(foreach dir,$(INCLUDE_DIRS),-I$(KP_DIR)/kernel/$(dir)) -I./in
 
 objs := release_spoof.o
 
-all: release_spoof.kpm
+all: release-spoof.kpm
 
-release_spoof.kpm: ${objs}
+release-spoof.kpm: ${objs}
 	${CC} -r -o $@ $^
 
 %.o: %.c
