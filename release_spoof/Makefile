@@ -24,7 +24,6 @@ release-spoof.kpm: ${objs}
 %.o: %.c
 	${CC} $(CFLAGS) $(INCLUDE_FLAGS) -c -O2 -o $@ $<
 
-.PHONY: clean
 clean:
-	rm -rf *.kpm
-	find . -name "*.o" | xargs rm -f
+	@rm -f *.kpm
+	@find . -name "*.o" -delete
