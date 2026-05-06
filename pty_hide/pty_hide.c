@@ -44,13 +44,15 @@ void after_stat_audit(hook_fargs4_t *args, void *udata)
 
     void __user *ustat = (void __user *)syscall_argn(args, 2);
     void __user *uid_addr = (char __user *)ustat + STAT_UID_OFFSET;
+    void __user *gid_addr = (char __user *)ustat + STAT_GID_OFFSET;
 
     unsigned int orig_uid;
     if (!read_user_uid(uid_addr, &orig_uid) || orig_uid != 0)
         return;
 
-    unsigned int fake_uid = 2000;
-    compat_copy_to_user(uid_addr, &fake_uid, sizeof(fake_uid));
+    unsigned int fake_id = 2000;
+    compat_copy_to_user(uid_addr, &fake_id, sizeof(fake_id));
+    compat_copy_to_user(gid_addr, &fake_id, sizeof(fake_id));
     LOGI("spoofed fstatat: %s", kpath);
 }
 
@@ -69,13 +71,15 @@ void after_statx_audit(hook_fargs5_t *args, void *udata)
 
     void __user *ustatx = (void __user *)syscall_argn(args, 4);
     void __user *uid_addr = (char __user *)ustatx + STATX_UID_OFFSET;
+    void __user *gid_addr = (char __user *)ustatx + STATX_GID_OFFSET;
 
     unsigned int orig_uid;
     if (!read_user_uid(uid_addr, &orig_uid) || orig_uid != 0)
         return;
 
-    unsigned int fake_uid = 2000;
-    compat_copy_to_user(uid_addr, &fake_uid, sizeof(fake_uid));
+    unsigned int fake_id = 2000;
+    compat_copy_to_user(uid_addr, &fake_id, sizeof(fake_id));
+    compat_copy_to_user(gid_addr, &fake_id, sizeof(fake_id));
     LOGI("spoofed statx: %s", kpath);
 }
 

@@ -5,7 +5,10 @@
 #define __NR_statx       291
 
 #define STAT_UID_OFFSET  24
-#define STATX_UID_OFFSET 20
+#define STAT_GID_OFFSET  28
+
+#define STATX_UID_OFFSET  20
+#define STATX_GID_OFFSET  24
 
 #define LOG_PREFIX "[pty_hide] "
 
