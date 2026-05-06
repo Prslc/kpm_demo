@@ -1,5 +1,5 @@
 ```bash
-sudo pacman -Syu git wget make
+sudo pacman -S --needed git wget make
 
 git clone https://github.com/Prslc/kpm_demo.git
 
