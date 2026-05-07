@@ -3,7 +3,7 @@ sudo pacman -S --needed git wget make
 
 git clone https://github.com/Prslc/kpm_demo.git
 
-wget arm-gnu-toolchain-12.2.rel1-x86_64-aarch64-none-elf.tar.xz https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu/12.2.rel1/binrel/arm-gnu-toolchain-12.2.rel1-x86_64-aarch64-none-elf.tar.xz
+wget https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu/12.2.rel1/binrel/arm-gnu-toolchain-12.2.rel1-x86_64-aarch64-none-elf.tar.xz
 
 tar -xvf arm-gnu-toolchain-12.2.rel1-x86_64-aarch64-none-elf.tar.xz
 
