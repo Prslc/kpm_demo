@@ -10,7 +10,7 @@
 #include <linux/err.h>
 
 KPM_NAME("selinux_shadow");
-KPM_VERSION("1.1.0");
+KPM_VERSION("1.2.0");
 KPM_AUTHOR("Prslc");
 KPM_DESCRIPTION("Sanitize SELinux transaction buffers to ensure policy integrity");
 
@@ -59,6 +59,19 @@ void after_simple_get(hook_fargs3_t *args, void *udata)
                 LOGW("Sanitizing system_server probe (UID %u)", uid);
                 if (kbuf) kbuf[0] = '\0'; 
                 return; 
+            }
+        }
+
+        // Block ZygiskNext probe (Zygote -> adb_data_file)
+        // " 8 "      -> Class: dir
+        // "10000000" -> Perm:  search (1 << 28)
+        if (k_memstr(kbuf, "u:r:zygote:s0", scan_range) &&
+            k_memstr(kbuf, "u:object_r:adb_data_file:s0", scan_range)) {
+            if (k_memstr(kbuf, " 8 ", scan_range) &&
+                k_memstr(kbuf, "10000000", scan_range)) {
+                LOGW("Blocked ZygiskNext probe");
+                kbuf[0] = '\0';
+                return;
             }
         }
 
