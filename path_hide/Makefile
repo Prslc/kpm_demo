@@ -23,7 +23,7 @@ CFLAGS += -Wall -O2 -fno-strict-aliasing -fno-PIC \
           -fno-asynchronous-unwind-tables -fno-stack-protector -fno-common \
           -mgeneral-regs-only -mno-outline-atomics -ffixed-x18 -fno-builtin
 
-objs := path_hide.o
+objs := path_hide.o ph_control.o ph_hooks.o ph_config.o ph_registry.o ph_util.o
 
 all: path_hide.kpm
 
