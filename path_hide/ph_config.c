@@ -22,6 +22,8 @@ int g_off_inode_uid = PH_OFF_INODE_UID;
 int g_off_inode_sb = PH_OFF_INODE_SB;
 int g_off_inode_ino = PH_OFF_INODE_INO;
 int g_off_file_inode = PH_OFF_FILE_INODE;
+int g_off_vma_file = PH_OFF_VMA_FILE;
+int g_off_seq_count = PH_OFF_SEQ_COUNT;
 int g_off_cred_security = PH_OFF_CRED_SECURITY;
 int g_off_tsec_sid = PH_OFF_TSEC_SID;
 int g_off_tsec_create_sid = PH_OFF_TSEC_CREATE_SID;
@@ -282,6 +284,8 @@ static void ph_offsets_default(struct ph_offsets *o)
     o->inode_sb = PH_OFF_INODE_SB;
     o->inode_ino = PH_OFF_INODE_INO;
     o->file_inode = PH_OFF_FILE_INODE;
+    o->vma_file = PH_OFF_VMA_FILE;
+    o->seq_count = PH_OFF_SEQ_COUNT;
     o->cred_security = PH_OFF_CRED_SECURITY;
     o->tsec_sid = PH_OFF_TSEC_SID;
     o->tsec_create_sid = PH_OFF_TSEC_CREATE_SID;
@@ -311,6 +315,8 @@ static void ph_offsets_apply(const struct ph_offsets *o)
     g_off_inode_sb = ph_off_pick("inode_sb", g_off_inode_sb, o->inode_sb, 8);
     g_off_inode_ino = ph_off_pick("inode_ino", g_off_inode_ino, o->inode_ino, 8);
     g_off_file_inode = ph_off_pick("file_inode", g_off_file_inode, o->file_inode, 8);
+    g_off_vma_file = ph_off_pick("vma_file", g_off_vma_file, o->vma_file, 8);
+    g_off_seq_count = ph_off_pick("seq_count", g_off_seq_count, o->seq_count, 8);
     g_off_cred_security = ph_off_pick("cred_security", g_off_cred_security, o->cred_security, 8);
     g_off_tsec_sid = ph_off_pick("tsec_sid", g_off_tsec_sid, o->tsec_sid, 4);
     g_off_tsec_create_sid = ph_off_pick("tsec_create_sid", g_off_tsec_create_sid, o->tsec_create_sid, 4);
@@ -392,6 +398,10 @@ static void ph_apply_config_line(char *line, struct ph_cfg *cfg)
             cfg->offs.inode_ino = (int)v;
         else if (!strcmp(key, "off_file_inode"))
             cfg->offs.file_inode = (int)v;
+        else if (!strcmp(key, "off_vma_file"))
+            cfg->offs.vma_file = (int)v;
+        else if (!strcmp(key, "off_seq_count"))
+            cfg->offs.seq_count = (int)v;
         else if (!strcmp(key, "off_cred_security"))
             cfg->offs.cred_security = (int)v;
         else if (!strcmp(key, "off_tsec_sid"))

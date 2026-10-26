@@ -32,6 +32,14 @@
 #define PH_OFF_FILE_INODE         0x20 /* file.f_inode */
 
 /*
+ * proc/maps offsets, derived from the actual Image:
+ *   show_map_vma(): ldr x21,[vma,#0xa0]   -> vma->vm_file
+ *   seq_write():    ldr x9,[seq,#0x18]    -> seq->count
+ */
+#define PH_OFF_VMA_FILE           0xa0
+#define PH_OFF_SEQ_COUNT          0x18
+
+/*
  * SELinux cred/SID offsets, derived from the actual Image:
  *   selinux_cred_getsecid(): ldr x8,[cred,#0x78]; ldr w8,[x8,#0x4]
  *   selinux_kernel_act_as(): tsec = cred->security (0x78); tsec->sid = 0x4

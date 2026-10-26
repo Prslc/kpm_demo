@@ -55,6 +55,8 @@ Image. Keys are hex:
 # off_inode_sb=0x28
 # off_inode_ino=0x40
 # off_file_inode=0x20
+# off_vma_file=0xa0
+# off_seq_count=0x18
 # off_cred_security=0x78
 # off_tsec_sid=0x4
 # off_tsec_create_sid=0xc
@@ -290,11 +292,24 @@ hide 1
 | `complete_walk` | after | final component of open/stat before `may_open`/`vfs_open` |
 | `iterate_dir` | before/after | records `file->f_inode->i_sb` for this getdents call |
 | `filldir64` / `filldir` | before | matches `(dir_sb, ino)` and skips matching entries with `skip_origin` |
+| `proc_cwd_link` / `proc_root_link` / `proc_exe_link` / `proc_fd_link` | after | drops the refs and returns `-ENOENT` when the link target is hidden |
+| `show_map` / `show_smap` | before/after | discards the whole maps/smaps record of a hidden file-backed vma |
 
 readdir prefers the authoritative `(dir_sb, ino)` pair captured by
 `iterate_dir`. `ilookup()` is only a fallback for the FUSE case where the
 dir sb is FUSE but only the backing `/data/media/0` path was registered, and
 when the ctx→sb slot table is full.
+
+The proc hooks cover `/proc/<pid>/{cwd,root,exe}` and `/proc/<pid>/fd/N`.
+For maps/smaps, `ph_after_show_map()` restores `seq_file.count` to the value
+from before the call, so the entire record is dropped (including its
+device/inode fields — no partial line is leaked). `getcwd(2)` is not covered;
+it would need a `__arm64_sys_getcwd` hook.
+
+These hooks match the **registered inode**, so register the exact file for
+`fd`/`exe`/`maps` (e.g. the `.so` or binary path), not only its parent
+directory. Registering a directory hides the directory itself and lookups
+through it, but not mmaps of files inside it.
 
 All hooks are installed with `hook_wrap` (chained), so other modules can hook
 the same functions.
@@ -363,11 +378,11 @@ SUSFS's `sus_path`):
 - **`getdents` offsets**: on filesystems that use sequential directory
   offsets (tmpfs), skipping an entry leaves a gap in `d_off`. ext4/f2fs use
   hashed offsets, so this is much less visible there.
-- **Pre-existing handles**: `/proc/self/fd/N`, `/proc/self/cwd`,
-  `/proc/self/maps`, `getcwd()` and fd-based `fstat`/`read` still reveal or
-  allow access to an object opened/mmapped before it was hidden. `maps`
-  needs a SUS_MAP-style feature; proc readlink needs hooks in
-  `proc_pid_get_link()`/`do_proc_readlink()`.
+- **Pre-existing handles**: `/proc/self/cwd`, `/proc/*/fd/N`, `/proc/*/maps`
+  and `/proc/*/smaps` are now covered (proc link hooks and
+  `show_map`/`show_smap`). `getcwd(2)` itself is not, and fd-based
+  `fstat`/`read` on an already-open fd still allow access to the object;
+  `getcwd` would need a `__arm64_sys_getcwd` hook.
 - **readdir vs stat inconsistency**: fixed for the normal case — `filldir`
   matches the authoritative `(dir_sb, ino)` captured by `iterate_dir`, so it
   no longer depends on the inode cache. The `ilookup()` fallback (used for the

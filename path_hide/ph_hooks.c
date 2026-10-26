@@ -221,6 +221,74 @@ static void ph_after_iterate_dir(hook_fargs2_t *args, void *udata)
     if (ph_kptr(ctx)) ph_dir_sb_remove(ctx);
 }
 
+/*
+ * /proc/<pid>/{cwd,root,exe} and /proc/<pid>/fd/N magic links all fill a
+ * struct path; hide the link and drop the refs taken by the original.
+ */
+static void ph_after_proc_link(hook_fargs2_t *args, void *udata)
+{
+    struct ph_path *path = (struct ph_path *)args->arg1;
+    void *dentry, *inode;
+
+    (void)udata;
+    if (!ph_interesting()) return;
+    if ((int)args->ret != 0) return;
+    if (!ph_kptr(path)) return;
+    dentry = path->dentry;
+    if (!ph_kptr(dentry)) return;
+    inode = dentry_inode(dentry);
+    if (!ph_kptr(inode)) return;
+
+    if (ph_probe_on()) ph_log_path("proc_link", inode, dentry);
+
+    if (!ph_is_hidden_inode(inode)) return;
+    if (!g_path_put) return;
+    g_path_put(path);
+    args->ret = (u64)(int)-ENOENT;
+}
+
+/*
+ * /proc/<pid>/maps and smaps: show_map/show_smap write one record; if the
+ * vma's file is hidden, restore seq->count to the value from before the
+ * call so the whole record is discarded (m_cache_vma still runs).
+ */
+static void ph_before_show_map(hook_fargs2_t *args, void *udata)
+{
+    void *seq = (void *)args->arg0;
+    void *vma = (void *)args->arg1;
+    void *file, *inode;
+
+    (void)udata;
+    if (!ph_interesting()) return;
+    if (!ph_kptr(seq) || !ph_kptr(vma)) return;
+    file = *(void **)((char *)vma + g_off_vma_file);
+    if (!ph_kptr(file)) return;
+    inode = *(void **)((char *)file + g_off_file_inode);
+    if (!ph_kptr(inode)) return;
+
+    if (ph_probe_on())
+        LOGI("probe maps uid=%u ino=%llu iuid=%u\n", (unsigned)current_uid(), (unsigned long long)inode_ino(inode),
+             (unsigned)inode_uid(inode));
+
+    if (!ph_is_hidden_inode(inode)) return;
+
+    args->local.data0 = *(u64 *)((char *)seq + g_off_seq_count);
+    args->local.data1 = 1;
+}
+
+static void ph_after_show_map(hook_fargs2_t *args, void *udata)
+{
+    void *seq = (void *)args->arg0;
+
+    (void)udata;
+    if (!args->local.data1) return;
+    args->local.data1 = 0;
+    if ((int)args->ret < 0) return;
+    if (!ph_kptr(seq)) return;
+    *(u64 *)((char *)seq + g_off_seq_count) = args->local.data0;
+    args->ret = 0;
+}
+
 /* hook table */
 
 static struct ph_hook g_hooks[] = {
@@ -230,6 +298,12 @@ static struct ph_hook g_hooks[] = {
     { "iterate_dir", 2, (void *)ph_before_iterate_dir, (void *)ph_after_iterate_dir, 0, false },
     { "filldir64", 6, (void *)ph_before_filldir64, NULL, 0, false },
     { "filldir", 6, (void *)ph_before_filldir, NULL, 0, false },
+    { "proc_cwd_link", 2, NULL, (void *)ph_after_proc_link, 0, false },
+    { "proc_root_link", 2, NULL, (void *)ph_after_proc_link, 0, false },
+    { "proc_exe_link", 2, NULL, (void *)ph_after_proc_link, 0, false },
+    { "proc_fd_link", 2, NULL, (void *)ph_after_proc_link, 0, false },
+    { "show_map", 2, (void *)ph_before_show_map, (void *)ph_after_show_map, 0, false },
+    { "show_smap", 2, (void *)ph_before_show_map, (void *)ph_after_show_map, 0, false },
 };
 
 int ph_hooks_resolve(void)

@@ -62,6 +62,8 @@ struct ph_offsets
     int inode_sb;
     int inode_ino;
     int file_inode;
+    int vma_file;
+    int seq_count;
     int cred_security;
     int tsec_sid;
     int tsec_create_sid;
@@ -141,6 +143,8 @@ extern int g_off_inode_uid;
 extern int g_off_inode_sb;
 extern int g_off_inode_ino;
 extern int g_off_file_inode;
+extern int g_off_vma_file;
+extern int g_off_seq_count;
 extern int g_off_cred_security;
 extern int g_off_tsec_sid;
 extern int g_off_tsec_create_sid;

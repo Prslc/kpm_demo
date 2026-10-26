@@ -110,12 +110,13 @@ static long ph_init(const char *args, const char *event, void *reserved)
 
     LOGI("offsets: nd_mnt=%x nd_dentry=%x nd_flags=%x dentry_inode=%x "
          "inode_uid=%x inode_sb=%x inode_ino=%x file_inode=%x "
+         "vma_file=%x seq_count=%x "
          "cred_security=%x tsec_sid=%x tsec_create=%x tsec_keycreate=%x "
          "tsec_sockcreate=%x\n",
          (unsigned)g_off_nd_mnt, (unsigned)g_off_nd_dentry, (unsigned)g_off_nd_flags, (unsigned)g_off_dentry_inode,
          (unsigned)g_off_inode_uid, (unsigned)g_off_inode_sb, (unsigned)g_off_inode_ino, (unsigned)g_off_file_inode,
-         (unsigned)g_off_cred_security, (unsigned)g_off_tsec_sid, (unsigned)g_off_tsec_create_sid,
-         (unsigned)g_off_tsec_keycreate_sid, (unsigned)g_off_tsec_sockcreate_sid);
+         (unsigned)g_off_vma_file, (unsigned)g_off_seq_count, (unsigned)g_off_cred_security, (unsigned)g_off_tsec_sid,
+         (unsigned)g_off_tsec_create_sid, (unsigned)g_off_tsec_keycreate_sid, (unsigned)g_off_tsec_sockcreate_sid);
 
     return 0;
 }
