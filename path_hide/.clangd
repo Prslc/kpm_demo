@@ -1,0 +1,9 @@
+CompileFlags:
+  Add:
+    - --target=aarch64-none-elf
+    - -I../KernelPatch/kernel/include
+    - -I../KernelPatch/kernel/patch/include
+    - -I../KernelPatch/kernel/linux/include
+    - -I../KernelPatch/kernel/linux/arch/arm64/include
+    - -I../KernelPatch/kernel/linux/tools/arch/arm64/include
+    - -I.
