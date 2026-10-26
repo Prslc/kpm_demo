@@ -251,7 +251,13 @@ static void ph_after_proc_link(hook_fargs2_t *args, void *udata)
  * /proc/<pid>/maps and smaps: show_map/show_smap write one record; if the
  * vma's file is hidden, restore seq->count to the value from before the
  * call so the whole record is discarded (m_cache_vma still runs).
+ *
+ * fargs->local is NOT zeroed by KP's transit, so clear our flag
+ * unconditionally in the before hook and use a magic value in the after
+ * hook; otherwise stale stack data truncates every maps read.
  */
+#define PH_SHOW_MAGIC 0x50484d50UL /* "PHMP" */
+
 static void ph_before_show_map(hook_fargs2_t *args, void *udata)
 {
     void *seq = (void *)args->arg0;
@@ -259,6 +265,8 @@ static void ph_before_show_map(hook_fargs2_t *args, void *udata)
     void *file, *inode;
 
     (void)udata;
+    args->local.data0 = 0;
+    args->local.data1 = 0;
     if (!ph_interesting()) return;
     if (!ph_kptr(seq) || !ph_kptr(vma)) return;
     file = *(void **)((char *)vma + g_off_vma_file);
@@ -273,19 +281,20 @@ static void ph_before_show_map(hook_fargs2_t *args, void *udata)
     if (!ph_is_hidden_inode(inode)) return;
 
     args->local.data0 = *(u64 *)((char *)seq + g_off_seq_count);
-    args->local.data1 = 1;
+    args->local.data1 = PH_SHOW_MAGIC;
 }
 
 static void ph_after_show_map(hook_fargs2_t *args, void *udata)
 {
     void *seq = (void *)args->arg0;
+    u64 saved = args->local.data0;
 
     (void)udata;
-    if (!args->local.data1) return;
+    if (args->local.data1 != PH_SHOW_MAGIC) return;
     args->local.data1 = 0;
     if ((int)args->ret < 0) return;
     if (!ph_kptr(seq)) return;
-    *(u64 *)((char *)seq + g_off_seq_count) = args->local.data0;
+    *(u64 *)((char *)seq + g_off_seq_count) = saved;
     args->ret = 0;
 }
 
