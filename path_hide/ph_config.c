@@ -24,6 +24,9 @@ int g_off_inode_ino = PH_OFF_INODE_INO;
 int g_off_file_inode = PH_OFF_FILE_INODE;
 int g_off_vma_file = PH_OFF_VMA_FILE;
 int g_off_seq_count = PH_OFF_SEQ_COUNT;
+int g_off_task_fs = PH_OFF_TASK_FS;
+int g_off_fs_pwd_dentry = PH_OFF_FS_PWD_DENTRY;
+int g_off_fs_seq = PH_OFF_FS_SEQ;
 int g_off_cred_security = PH_OFF_CRED_SECURITY;
 int g_off_tsec_sid = PH_OFF_TSEC_SID;
 int g_off_tsec_create_sid = PH_OFF_TSEC_CREATE_SID;
@@ -286,6 +289,9 @@ static void ph_offsets_default(struct ph_offsets *o)
     o->file_inode = PH_OFF_FILE_INODE;
     o->vma_file = PH_OFF_VMA_FILE;
     o->seq_count = PH_OFF_SEQ_COUNT;
+    o->task_fs = PH_OFF_TASK_FS;
+    o->fs_pwd_dentry = PH_OFF_FS_PWD_DENTRY;
+    o->fs_seq = PH_OFF_FS_SEQ;
     o->cred_security = PH_OFF_CRED_SECURITY;
     o->tsec_sid = PH_OFF_TSEC_SID;
     o->tsec_create_sid = PH_OFF_TSEC_CREATE_SID;
@@ -317,6 +323,9 @@ static void ph_offsets_apply(const struct ph_offsets *o)
     g_off_file_inode = ph_off_pick("file_inode", g_off_file_inode, o->file_inode, 8);
     g_off_vma_file = ph_off_pick("vma_file", g_off_vma_file, o->vma_file, 8);
     g_off_seq_count = ph_off_pick("seq_count", g_off_seq_count, o->seq_count, 8);
+    g_off_task_fs = ph_off_pick("task_fs", g_off_task_fs, o->task_fs, 8);
+    g_off_fs_pwd_dentry = ph_off_pick("fs_pwd_dentry", g_off_fs_pwd_dentry, o->fs_pwd_dentry, 8);
+    g_off_fs_seq = ph_off_pick("fs_seq", g_off_fs_seq, o->fs_seq, 4);
     g_off_cred_security = ph_off_pick("cred_security", g_off_cred_security, o->cred_security, 8);
     g_off_tsec_sid = ph_off_pick("tsec_sid", g_off_tsec_sid, o->tsec_sid, 4);
     g_off_tsec_create_sid = ph_off_pick("tsec_create_sid", g_off_tsec_create_sid, o->tsec_create_sid, 4);
@@ -402,6 +411,12 @@ static void ph_apply_config_line(char *line, struct ph_cfg *cfg)
             cfg->offs.vma_file = (int)v;
         else if (!strcmp(key, "off_seq_count"))
             cfg->offs.seq_count = (int)v;
+        else if (!strcmp(key, "off_task_fs"))
+            cfg->offs.task_fs = (int)v;
+        else if (!strcmp(key, "off_fs_pwd_dentry"))
+            cfg->offs.fs_pwd_dentry = (int)v;
+        else if (!strcmp(key, "off_fs_seq"))
+            cfg->offs.fs_seq = (int)v;
         else if (!strcmp(key, "off_cred_security"))
             cfg->offs.cred_security = (int)v;
         else if (!strcmp(key, "off_tsec_sid"))

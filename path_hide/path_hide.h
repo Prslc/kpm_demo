@@ -40,6 +40,17 @@
 #define PH_OFF_SEQ_COUNT          0x18
 
 /*
+ * getcwd offset, derived from __arm64_sys_getcwd():
+ *   mrs x24, SP_EL0
+ *   ldr x8, [x24, #0x808]     -> task_struct.fs
+ *   add x10, x8, #0x28        -> fs_struct.pwd
+ *   ldp x14, x15, [x10]       -> pwd.mnt, pwd.dentry (+0x30)
+ */
+#define PH_OFF_TASK_FS            0x808
+#define PH_OFF_FS_PWD_DENTRY      0x30
+#define PH_OFF_FS_SEQ             0x08 /* fs_struct.seq, seqlock */
+
+/*
  * SELinux cred/SID offsets, derived from the actual Image:
  *   selinux_cred_getsecid(): ldr x8,[cred,#0x78]; ldr w8,[x8,#0x4]
  *   selinux_kernel_act_as(): tsec = cred->security (0x78); tsec->sid = 0x4

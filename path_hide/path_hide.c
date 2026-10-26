@@ -46,6 +46,8 @@ ph_revert_creds_t g_revert_creds;
 ph_put_cred_t g_put_cred;
 ph_secctx_to_secid_t g_secctx_to_secid;
 ph_selinux_cred_getsecid_t g_selinux_cred_getsecid;
+void (*g_rcu_read_lock)(void);
+void (*g_rcu_read_unlock)(void);
 
 static long ph_init(const char *args, const char *event, void *reserved)
 {
@@ -88,6 +90,8 @@ static long ph_init(const char *args, const char *event, void *reserved)
     g_put_cred = (ph_put_cred_t)kallsyms_lookup_name("__put_cred");
     g_secctx_to_secid = (ph_secctx_to_secid_t)kallsyms_lookup_name("security_secctx_to_secid");
     g_selinux_cred_getsecid = (ph_selinux_cred_getsecid_t)kallsyms_lookup_name("selinux_cred_getsecid");
+    g_rcu_read_lock = (void (*)(void))kallsyms_lookup_name("__rcu_read_lock");
+    g_rcu_read_unlock = (void (*)(void))kallsyms_lookup_name("__rcu_read_unlock");
 
     resolved = ph_hooks_resolve();
 
@@ -110,12 +114,13 @@ static long ph_init(const char *args, const char *event, void *reserved)
 
     LOGI("offsets: nd_mnt=%x nd_dentry=%x nd_flags=%x dentry_inode=%x "
          "inode_uid=%x inode_sb=%x inode_ino=%x file_inode=%x "
-         "vma_file=%x seq_count=%x "
+         "vma_file=%x seq_count=%x task_fs=%x fs_pwd_dentry=%x fs_seq=%x "
          "cred_security=%x tsec_sid=%x tsec_create=%x tsec_keycreate=%x "
          "tsec_sockcreate=%x\n",
          (unsigned)g_off_nd_mnt, (unsigned)g_off_nd_dentry, (unsigned)g_off_nd_flags, (unsigned)g_off_dentry_inode,
          (unsigned)g_off_inode_uid, (unsigned)g_off_inode_sb, (unsigned)g_off_inode_ino, (unsigned)g_off_file_inode,
-         (unsigned)g_off_vma_file, (unsigned)g_off_seq_count, (unsigned)g_off_cred_security, (unsigned)g_off_tsec_sid,
+         (unsigned)g_off_vma_file, (unsigned)g_off_seq_count, (unsigned)g_off_task_fs, (unsigned)g_off_fs_pwd_dentry,
+         (unsigned)g_off_fs_seq, (unsigned)g_off_cred_security, (unsigned)g_off_tsec_sid,
          (unsigned)g_off_tsec_create_sid, (unsigned)g_off_tsec_keycreate_sid, (unsigned)g_off_tsec_sockcreate_sid);
 
     return 0;

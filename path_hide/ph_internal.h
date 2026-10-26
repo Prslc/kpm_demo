@@ -64,6 +64,9 @@ struct ph_offsets
     int file_inode;
     int vma_file;
     int seq_count;
+    int task_fs;
+    int fs_pwd_dentry;
+    int fs_seq;
     int cred_security;
     int tsec_sid;
     int tsec_create_sid;
@@ -123,6 +126,8 @@ extern ph_revert_creds_t g_revert_creds;
 extern ph_put_cred_t g_put_cred;
 extern ph_secctx_to_secid_t g_secctx_to_secid;
 extern ph_selinux_cred_getsecid_t g_selinux_cred_getsecid;
+extern void (*g_rcu_read_lock)(void);
+extern void (*g_rcu_read_unlock)(void);
 
 /* config state, defined in ph_config.c */
 extern volatile int g_hide;
@@ -145,6 +150,9 @@ extern int g_off_inode_ino;
 extern int g_off_file_inode;
 extern int g_off_vma_file;
 extern int g_off_seq_count;
+extern int g_off_task_fs;
+extern int g_off_fs_pwd_dentry;
+extern int g_off_fs_seq;
 extern int g_off_cred_security;
 extern int g_off_tsec_sid;
 extern int g_off_tsec_create_sid;
@@ -190,6 +198,15 @@ static inline u32 inode_uid(void *inode)
 static inline u32 nd_flags(void *nd)
 {
     return *(u32 *)((char *)nd + g_off_nd_flags);
+}
+
+/* current task; this kernel stores current in SP_EL0 (THREAD_INFO_IN_TASK) */
+static inline void *ph_current(void)
+{
+    unsigned long cur;
+
+    __asm__ __volatile__("mrs %0, sp_el0" : "=r"(cur));
+    return (void *)cur;
 }
 
 /* ph_util.c */

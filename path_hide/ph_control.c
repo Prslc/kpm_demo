@@ -126,6 +126,12 @@ long ph_control(const char *args, char *__user out_msg, int outlen)
         pos = ph_sputs(reply, sizeof(reply), pos, " ");
         pos = ph_sput_off(reply, sizeof(reply), pos, "seq_count", g_off_seq_count);
         pos = ph_sputs(reply, sizeof(reply), pos, " ");
+        pos = ph_sput_off(reply, sizeof(reply), pos, "task_fs", g_off_task_fs);
+        pos = ph_sputs(reply, sizeof(reply), pos, " ");
+        pos = ph_sput_off(reply, sizeof(reply), pos, "fs_pwd_dentry", g_off_fs_pwd_dentry);
+        pos = ph_sputs(reply, sizeof(reply), pos, " ");
+        pos = ph_sput_off(reply, sizeof(reply), pos, "fs_seq", g_off_fs_seq);
+        pos = ph_sputs(reply, sizeof(reply), pos, " ");
         pos = ph_sput_off(reply, sizeof(reply), pos, "cred_security", g_off_cred_security);
         pos = ph_sputs(reply, sizeof(reply), pos, " ");
         pos = ph_sput_off(reply, sizeof(reply), pos, "tsec_sid", g_off_tsec_sid);

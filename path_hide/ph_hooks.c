@@ -289,6 +289,47 @@ static void ph_after_show_map(hook_fargs2_t *args, void *udata)
     args->ret = 0;
 }
 
+/*
+ * getcwd(2): reject the syscall when the caller's cwd inode is hidden.
+ * fs->pwd is seqlock-protected and the dentry is RCU-freed; read it the
+ * same way get_fs_root_and_pwd_rcu() does.
+ */
+static void ph_before_getcwd(hook_fargs1_t *args, void *udata)
+{
+    void *task, *fs, *dentry, *inode;
+    u32 seq;
+
+    (void)udata;
+    if (!ph_interesting()) return;
+    if (!g_rcu_read_lock || !g_rcu_read_unlock) return;
+    task = ph_current();
+    if (!ph_kptr(task)) return;
+    fs = *(void **)((char *)task + g_off_task_fs);
+    if (!ph_kptr(fs)) return;
+
+    g_rcu_read_lock();
+    for (;;) {
+        seq = *(u32 *)((char *)fs + g_off_fs_seq);
+        if (seq & 1) continue;
+        smp_rmb();
+        dentry = *(void **)((char *)fs + g_off_fs_pwd_dentry);
+        smp_rmb();
+        if (seq == *(u32 *)((char *)fs + g_off_fs_seq)) break;
+    }
+
+    if (ph_kptr(dentry)) {
+        inode = dentry_inode(dentry);
+        if (ph_kptr(inode)) {
+            if (ph_probe_on()) ph_log_path("getcwd", inode, dentry);
+            if (ph_is_hidden_inode(inode)) {
+                args->skip_origin = 1;
+                args->ret = (u64)(long)-ENOENT;
+            }
+        }
+    }
+    g_rcu_read_unlock();
+}
+
 /* hook table */
 
 static struct ph_hook g_hooks[] = {
@@ -304,6 +345,7 @@ static struct ph_hook g_hooks[] = {
     { "proc_fd_link", 2, NULL, (void *)ph_after_proc_link, 0, false },
     { "show_map", 2, (void *)ph_before_show_map, (void *)ph_after_show_map, 0, false },
     { "show_smap", 2, (void *)ph_before_show_map, (void *)ph_after_show_map, 0, false },
+    { "__arm64_sys_getcwd", 1, (void *)ph_before_getcwd, NULL, 0, false },
 };
 
 int ph_hooks_resolve(void)
