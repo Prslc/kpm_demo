@@ -22,6 +22,7 @@ int g_off_inode_uid = PH_OFF_INODE_UID;
 int g_off_inode_sb = PH_OFF_INODE_SB;
 int g_off_inode_ino = PH_OFF_INODE_INO;
 int g_off_file_inode = PH_OFF_FILE_INODE;
+int g_off_file_dentry = PH_OFF_FILE_DENTRY;
 int g_off_vma_file = PH_OFF_VMA_FILE;
 int g_off_seq_count = PH_OFF_SEQ_COUNT;
 int g_off_task_fs = PH_OFF_TASK_FS;
@@ -287,6 +288,7 @@ static void ph_offsets_default(struct ph_offsets *o)
     o->inode_sb = PH_OFF_INODE_SB;
     o->inode_ino = PH_OFF_INODE_INO;
     o->file_inode = PH_OFF_FILE_INODE;
+    o->file_dentry = PH_OFF_FILE_DENTRY;
     o->vma_file = PH_OFF_VMA_FILE;
     o->seq_count = PH_OFF_SEQ_COUNT;
     o->task_fs = PH_OFF_TASK_FS;
@@ -321,6 +323,7 @@ static void ph_offsets_apply(const struct ph_offsets *o)
     g_off_inode_sb = ph_off_pick("inode_sb", g_off_inode_sb, o->inode_sb, 8);
     g_off_inode_ino = ph_off_pick("inode_ino", g_off_inode_ino, o->inode_ino, 8);
     g_off_file_inode = ph_off_pick("file_inode", g_off_file_inode, o->file_inode, 8);
+    g_off_file_dentry = ph_off_pick("file_dentry", g_off_file_dentry, o->file_dentry, 8);
     g_off_vma_file = ph_off_pick("vma_file", g_off_vma_file, o->vma_file, 8);
     g_off_seq_count = ph_off_pick("seq_count", g_off_seq_count, o->seq_count, 8);
     g_off_task_fs = ph_off_pick("task_fs", g_off_task_fs, o->task_fs, 8);
@@ -407,6 +410,8 @@ static void ph_apply_config_line(char *line, struct ph_cfg *cfg)
             cfg->offs.inode_ino = (int)v;
         else if (!strcmp(key, "off_file_inode"))
             cfg->offs.file_inode = (int)v;
+        else if (!strcmp(key, "off_file_dentry"))
+            cfg->offs.file_dentry = (int)v;
         else if (!strcmp(key, "off_vma_file"))
             cfg->offs.vma_file = (int)v;
         else if (!strcmp(key, "off_seq_count"))

@@ -30,6 +30,7 @@
 #define PH_OFF_INODE_SB           0x28 /* inode.i_sb */
 #define PH_OFF_INODE_INO          0x40 /* inode.i_ino */
 #define PH_OFF_FILE_INODE         0x20 /* file.f_inode */
+#define PH_OFF_FILE_DENTRY        0x18 /* file.f_path.dentry */
 
 /*
  * proc/maps offsets, derived from the actual Image:

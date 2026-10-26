@@ -274,9 +274,11 @@ static void ph_before_show_map(hook_fargs2_t *args, void *udata)
     inode = *(void **)((char *)file + g_off_file_inode);
     if (!ph_kptr(inode)) return;
 
-    if (ph_probe_on())
-        LOGI("probe maps uid=%u ino=%llu iuid=%u\n", (unsigned)current_uid(), (unsigned long long)inode_ino(inode),
-             (unsigned)inode_uid(inode));
+    if (ph_probe_on()) {
+        void *fdentry = *(void **)((char *)file + g_off_file_dentry);
+
+        ph_log_path("maps", inode, ph_kptr(fdentry) ? fdentry : NULL);
+    }
 
     if (!ph_is_hidden_inode(inode)) return;
 

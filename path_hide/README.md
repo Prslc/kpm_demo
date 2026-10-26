@@ -55,6 +55,7 @@ Image. Keys are hex:
 # off_inode_sb=0x28
 # off_inode_ino=0x40
 # off_file_inode=0x20
+# off_file_dentry=0x18
 # off_vma_file=0xa0
 # off_seq_count=0x18
 # off_task_fs=0x808
